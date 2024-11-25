@@ -1,14 +1,13 @@
 # Ignore the virtual environment
 myvenv/
 .env/
-.env
+env
 
 # Ignore Python bytecode files
 *.pyc
 *.pyo
 *.pyd
 
-# Ignore Django migration files
 */migrations/*
 
 # Ignore the database file

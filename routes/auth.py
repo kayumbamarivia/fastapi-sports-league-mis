@@ -40,7 +40,7 @@ async def login(user: Login, db: Session = Depends(get_db)):
 
 
 @router.get("/users", response_model=List[UserResponse])
-async def get_users(db: db_dependency, current_user: current_user):
+async def get_users(db: db_dependency):
     db_users = db.query(Users).all()
     return [
         UserResponse(
@@ -54,7 +54,7 @@ async def get_users(db: db_dependency, current_user: current_user):
         ]
 
 @router.get("/users/{u_id}", response_model=UserResponse)
-async def get_user_by_id(u_id: int, db: db_dependency, current_user: current_user):
+async def get_user_by_id(u_id: int, db: db_dependency):
     db_user = db.query(Users).filter(Users.id==u_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail=NOT_FOUND)
@@ -67,7 +67,7 @@ async def get_user_by_id(u_id: int, db: db_dependency, current_user: current_use
         )
     
 @router.put("/users/{u_id}/edit", response_model=SucessResponse)
-async def update_user_by_id(u_id: int, u: UserCreate, db: db_dependency, current_user: current_user):
+async def update_user_by_id(u_id: int, u: UserCreate, db: db_dependency):
     db_user = db.query(Users).filter(Users.id==u_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail=NOT_FOUND)
@@ -82,7 +82,7 @@ async def update_user_by_id(u_id: int, u: UserCreate, db: db_dependency, current
     return SucessResponse(message="User updated successfully!")
     
 @router.delete("/users/{u_id}/delete", response_model=SucessResponse)
-async def delete_user_by_id(u_id: int, db: db_dependency, current_user: current_user):
+async def delete_user_by_id(u_id: int, db: db_dependency):
     db_user = db.query(Users).filter(Users.id==u_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail=NOT_FOUND)
@@ -92,7 +92,7 @@ async def delete_user_by_id(u_id: int, db: db_dependency, current_user: current_
     return SucessResponse(message="User deleted successfully!")
 
 @router.delete("/users/delete_all")
-async def delete_all_users(db: db_dependency, current_user: current_user):
+async def delete_all_users(db: db_dependency):
     try:
         db.query(Users).delete()
         db.commit()

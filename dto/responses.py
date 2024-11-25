@@ -34,12 +34,14 @@ class TeamCreate(BaseModel):
     name: str
     coach: str
     players: List[str]
+    user_id: int
     
 class TeamResponse(BaseModel):
     id: int | None=None
     name: str
     coach: str
     players: List[str]
+    user_id: int
     
     class Config:
         orm_mode = True

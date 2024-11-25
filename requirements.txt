@@ -7,3 +7,4 @@ passlib[bcrypt]
 python-jose[cryptography]
 fastapi[all]
 python-multipart
+requests

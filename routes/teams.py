@@ -17,12 +17,12 @@ Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 current_user = Annotated[str, Depends(get_current_user)]
 
-@router.post("/teams/create", response_model=SucessResponse)
-async def create_team(team: TeamCreate, db: db_dependency, current_user: current_user):
+@router.post("/teams/{u_id}/create", response_model=SucessResponse)
+async def create_team_by_user_id(u_id : int, team: TeamCreate, db: db_dependency):
     db_team = db.query(Teams).filter(Teams.name == team.name).first()
     if db_team:
         raise HTTPException(status_code=400, detail="Team already there")
-    new_team = Teams(name=team.name, coach=team.coach, players=team.players)
+    new_team = Teams(name=team.name, coach=team.coach, players=team.players, user_id=team.user_id)
     db.add(new_team)
     db.commit()
     db.refresh(new_team)
@@ -31,20 +31,21 @@ async def create_team(team: TeamCreate, db: db_dependency, current_user: current
 
 
 @router.get("/teams", response_model=List[TeamResponse])
-async def get_teams(db: db_dependency, current_user: current_user):
+async def get_teams(db: db_dependency):
     db_teams = db.query(Teams).all()
     return [
         TeamResponse(
             id=t.id,
             name=t.name,
             coach=t.coach,
-            players=json.loads(t.players) if isinstance(t.players, str) else t.players
+            players=json.loads(t.players) if isinstance(t.players, str) else t.players,
+            user_id=t.user_id
             )
         for t in db_teams
         ]
 
 @router.get("/teams/{t_id}", response_model=TeamResponse)
-async def get_team_by_id(t_id: int, db: db_dependency, current_user: current_user):
+async def get_team_by_id(t_id: int, db: db_dependency):
     db_team = db.query(Teams).filter(Teams.id==t_id).first()
     if not db_team:
         raise HTTPException(status_code=404, detail=NOT_FOUND)
@@ -52,11 +53,12 @@ async def get_team_by_id(t_id: int, db: db_dependency, current_user: current_use
             id=db_team.id,
             name=db_team.name,
             coach=db_team.coach,
-            players=json.loads(db_team.players) if isinstance(db_team.players, str) else db_team.players
+            players=json.loads(db_team.players) if isinstance(db_team.players, str) else db_team.players,
+            user_id=db_team.user_id
             )
     
 @router.put("/teams/{t_id}/edit", response_model=SucessResponse)
-async def update_team_by_id(t_id: int, t: TeamCreate, db: db_dependency, current_user: current_user):
+async def update_team_by_id(t_id: int, t: TeamCreate, db: db_dependency):
     db_team = db.query(Teams).filter(Teams.id==t_id).first()
     if not db_team:
         raise HTTPException(status_code=404, detail=NOT_FOUND)
@@ -68,8 +70,8 @@ async def update_team_by_id(t_id: int, t: TeamCreate, db: db_dependency, current
     db.refresh(db_team)
     return SucessResponse(message="Team updated successfully!")
     
-@router.delete("/teams/{u_id}/delete", response_model=SucessResponse)
-async def delete_team_by_id(t_id: int, db: db_dependency, current_user: current_user):
+@router.delete("/teams/{t_id}/delete", response_model=SucessResponse)
+async def delete_team_by_id(t_id: int, db: db_dependency):
     db_team = db.query(Teams).filter(Teams.id==t_id).first()
     if not db_team:
         raise HTTPException(status_code=404, detail=NOT_FOUND)
@@ -79,7 +81,7 @@ async def delete_team_by_id(t_id: int, db: db_dependency, current_user: current_
     return SucessResponse(message="Team deleted successfully!")
 
 @router.delete("/teams/delete_all")
-async def delete_all_teams(db: db_dependency, current_user: current_user):
+async def delete_all_teams(db: db_dependency):
     try:
         db.query(Teams).delete()
         db.commit()
