@@ -3,8 +3,10 @@ uvicorn
 psycopg2-binary
 sqlalchemy
 python-dotenv
-passlib[bcrypt]
 python-jose[cryptography]
 fastapi[all]
 python-multipart
 requests
+faker
+bcrypt
+passlib
